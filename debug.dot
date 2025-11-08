@@ -1,0 +1,21 @@
+digraph G {
+    bgcolor = "white";
+    rankdir = TB;
+    nodesep = 0.5;
+    ranksep = 2.0;
+    splines = ortho;
+    node [style = "filled", shape = Mrecord,
+         fillcolor = aquamarine, color = black,
+         width = 0.2, height = 0.4];
+node0  [label = "{<par> parent: 0000000000000000 | <el> node_element: 10 | {<left> left_branch: 000001f21bfc1430 | <right> right_branch: 000001f21bfc1460}}"];
+node1  [label = "{<par> parent: 000001f21bfc1400 | <el> node_element: 5 | {<left> left_branch: 000001f21bfc1490 | <right> right_branch: 000001f21bfc14c0}}"];
+node3  [label = "{<par> parent: 000001f21bfc1430 | <el> node_element: 3 | {<left> left_branch: 0000000000000000 | <right> right_branch: 0000000000000000}}"];
+node4  [label = "{<par> parent: 000001f21bfc1430 | <el> node_element: 7 | {<left> left_branch: 000001f21bfc1520 | <right> right_branch: 0000000000000000}}"];
+node6  [label = "{<par> parent: 000001f21bfc14c0 | <el> node_element: 6 | {<left> left_branch: 0000000000000000 | <right> right_branch: 0000000000000000}}"];
+node2  [label = "{<par> parent: 000001f21bfc1400 | <el> node_element: 20 | {<left> left_branch: 0000000000000000 | <right> right_branch: 0000000000000000}}"];
+node0:left -> node1:par [color = seagreen];
+node1:left -> node3:par [color = seagreen];
+node1:right -> node4:par [color = seagreen];
+node4:left -> node6:par [color = seagreen];
+node0:right -> node2:par [color = seagreen];
+}
