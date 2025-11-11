@@ -23,7 +23,7 @@ int main(void) {
     if (InsertInTree(6, &tree) != CORRECT)    return INCORRECT;
     if (InsertInTree(13, &tree) != CORRECT)   return INCORRECT;
     if (InsertInTree(16, &tree) != CORRECT)   return INCORRECT;
-    if (DeleteFromTree(15, &tree) != CORRECT) return INCORRECT;
+    if (DeleteFromTree(20, &tree) != CORRECT) return INCORRECT;
     PrintNode(tree.root);
     DUMP_TREE(&tree);
 

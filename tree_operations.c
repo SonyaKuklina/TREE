@@ -9,14 +9,10 @@ enum ProgrammReturn InsertInTree(TreeElement element, struct Tree_t* tree) {
     assert(tree != NULL);
     if (TreeVerify(tree) != SUCCESS) return INCORRECT;
 
-    struct Node_t* node = CreateNode(element);
+    struct Node_t* node = CreateNode(element, tree);
     assert(node != NULL);
 
-    if (tree -> root == NULL) {
-
-        tree -> root = node;
-
-    } else {
+    if (tree -> root != NULL) {
 
         struct Node_t* current_node = tree -> root;
         struct Node_t* parent_node  = NULL;
@@ -27,7 +23,10 @@ enum ProgrammReturn InsertInTree(TreeElement element, struct Tree_t* tree) {
 
             if      (element < current_node -> node_element)  current_node = current_node -> left_branch;
             else if (element > current_node -> node_element)  current_node = current_node -> right_branch;
-            else if (element == current_node -> node_element) return CORRECT;//то есть элемент уже есть в дереве, повторно не добавляю
+            else if (element == current_node -> node_element) {
+                free(node);//
+                return CORRECT;
+            }
 
         }
 
@@ -36,9 +35,14 @@ enum ProgrammReturn InsertInTree(TreeElement element, struct Tree_t* tree) {
 
         node -> parent = parent_node;
 
+    } else {
+
+        tree -> root = node;
+
     }
 
-    (tree -> node_count)++;
+    (tree -> node_size)++;
+
     return CORRECT;
 
 }
@@ -59,17 +63,29 @@ enum ProgrammReturn DeleteFromTree(TreeElement element, struct Tree_t* tree) {
         if (element < current_element) current_node = current_node -> left_branch;
         else current_node = current_node -> right_branch;
 
+        if (current_node == NULL) return CORRECT; //элемент, который я хочу удалить не был найден
+
         current_element = current_node -> node_element;
 
     }
 
     if (current_node == NULL) return CORRECT;
 
-    if      (current_node == (tree -> root))        DestroyTree(tree, current_node, 'N');
-    else if (element > parent_node -> node_element) DestroyTree(tree, current_node, 'R');
-    else if (element < parent_node -> node_element) DestroyTree(tree, current_node, 'L');
+    if (parent_node == NULL) {
 
-    (tree -> node_count)--;
+        DestroyTree(tree, current_node);
+
+    } else if (parent_node->left_branch == current_node) {
+
+        DestroyTree(tree, current_node);
+        parent_node->left_branch = NULL;
+
+    } else {
+
+        DestroyTree(tree, current_node);
+        parent_node->right_branch = NULL;
+
+    }
 
     return CORRECT;
 

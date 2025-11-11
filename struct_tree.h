@@ -17,7 +17,7 @@ struct Node_t {
 struct Tree_t {
 
     struct Node_t* root;
-    size_t node_count;
+    size_t node_size;
 
 };
 

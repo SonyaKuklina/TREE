@@ -5,17 +5,15 @@
 #include "struct_tree.h"
 #include "tree_graph.h"
 
-static int node_count = 0;
-
 void TreeInit(struct Tree_t* tree) {
 
     assert(tree != NULL);
     tree -> root = NULL;
-    tree -> node_count = 0;
+    tree -> node_size = 0;
 
 }
 
-struct Node_t* CreateNode(TreeElement element) {
+struct Node_t* CreateNode(TreeElement element, struct Tree_t* tree) {
 
     struct Node_t* node = (struct Node_t*)calloc(1, sizeof(struct Node_t));
     assert(node != NULL);
@@ -23,34 +21,24 @@ struct Node_t* CreateNode(TreeElement element) {
     node -> left_branch  = NULL;
     node -> right_branch = NULL;
     node -> parent       = NULL;
-    node -> num_node     = node_count++;
+    node -> num_node     = tree -> node_size;
     return node;
 }
 
-void DestroyTree(struct Tree_t* tree, struct Node_t* current_node, char branch) {
+void DestroyTree(struct Tree_t* tree, struct Node_t* current_node) {
 
     assert(tree != NULL);
 
     if (current_node == NULL) return;
 
-    if (current_node -> left_branch !=  NULL) {
-        (tree -> node_count)--;
-        DestroyTree(tree, current_node -> left_branch, 'L');
-    }
-    if (current_node -> right_branch != NULL) {
-        (tree -> node_count)--;
-        DestroyTree(tree, current_node -> right_branch, 'R');
+    if (current_node == tree->root) {
+        tree->root = NULL;
     }
 
-    if      (branch == 'L' && current_node->parent != NULL) (current_node -> parent) -> left_branch  = NULL;
-    else if (branch == 'R' && current_node->parent != NULL) (current_node -> parent) -> right_branch = NULL;
-    else if (branch == 'N') tree->root = NULL;
+    if (current_node -> left_branch != NULL)  DestroyTree(tree, current_node -> left_branch);
+    if (current_node -> right_branch != NULL) DestroyTree(tree, current_node -> right_branch);
 
-
-    current_node -> left_branch  = NULL;
-    current_node -> right_branch = NULL;
-    current_node -> parent       = NULL;
-
+    (tree -> node_size)--;
     free(current_node);
 
     return;
@@ -64,8 +52,7 @@ ErrorType TreeVerify(struct Tree_t* tree) {
     ErrorType curr_error = SUCCESS;
     if (tree == NULL)
         curr_error |= NULL_POINTER;
-    if (tree -> node_count == 0 && tree -> root != NULL)
-        curr_error |= ERROR_NODE_COUNT;
+
     if (tree -> root != NULL)
         SubTreeVerify(tree -> root, NULL, &curr_error);
 
