@@ -7,25 +7,17 @@
 #include "tree_operations.h"
 #include "tree_private.h"
 #include "output.h"
+#include "describe_object.h"
 
 #define DUMP_TREE(x) DumpTree((x), __FILE__, __LINE__)
 
 int main(void) {
 
-    struct Tree_t tree = {};
-    TreeInit(&tree);
-    if (InsertInTree(10, &tree) != CORRECT)   return INCORRECT;
-    if (InsertInTree(5, &tree) != CORRECT)    return INCORRECT;
-    if (InsertInTree(20, &tree) != CORRECT)   return INCORRECT;
-    if (InsertInTree(3, &tree) != CORRECT)    return INCORRECT;
-    if (InsertInTree(7, &tree) != CORRECT)    return INCORRECT;
-    if (InsertInTree(15, &tree) != CORRECT)   return INCORRECT;
-    if (InsertInTree(6, &tree) != CORRECT)    return INCORRECT;
-    if (InsertInTree(13, &tree) != CORRECT)   return INCORRECT;
-    if (InsertInTree(16, &tree) != CORRECT)   return INCORRECT;
-    if (DeleteFromTree(20, &tree) != CORRECT) return INCORRECT;
-    PrintNode(tree.root);
-    DUMP_TREE(&tree);
-
+    struct Tree_t* tree = CreateAkinatorTree();
+    //DUMP_TREE(tree);
+    Akinator(tree);
+    DUMP_TREE(tree);
+    if (CreateDescribe("Katya K", tree) == INCORRECT) return INCORRECT;
     return CORRECT;
+
 }

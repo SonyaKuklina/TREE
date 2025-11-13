@@ -13,6 +13,31 @@ void TreeInit(struct Tree_t* tree) {
 
 }
 
+struct Tree_t* CreateAkinatorTree() {
+    struct Tree_t* tree = (struct Tree_t*)calloc(1, sizeof(struct Tree_t));
+    assert(tree != NULL);
+
+    tree->root = CreateNode("Animal?", tree);
+    (tree -> node_size)++;
+
+    tree->root->left_branch = CreateNode("Cat", tree);
+    (tree -> node_size)++;
+    tree->root->right_branch = CreateNode("He teach math?", tree);
+    (tree -> node_size)++;
+    ((tree -> root) -> right_branch) -> left_branch = CreateNode("Lukash", tree);
+    (tree -> node_size)++;
+    ((tree -> root) -> right_branch) -> right_branch = CreateNode("Sonya", tree);
+    (tree -> node_size)++;
+
+    tree->root->left_branch->parent = tree->root;
+    tree->root->right_branch->parent = tree->root;
+
+    (((tree -> root) -> right_branch) -> left_branch) -> parent = tree->root->right_branch;
+    (((tree -> root) -> right_branch) -> right_branch) -> parent = tree->root->right_branch;
+
+    return tree;
+}
+
 struct Node_t* CreateNode(TreeElement element, struct Tree_t* tree) {
 
     struct Node_t* node = (struct Node_t*)calloc(1, sizeof(struct Node_t));

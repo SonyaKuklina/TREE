@@ -48,7 +48,7 @@ void CreateNodesGraph(struct Node_t* node, FILE* file_dot) {
 
     if (node == NULL) return;
 
-    fprintf(file_dot, "node%d  [label = \"{<par> parent: %p | <el> node_element: %d | {<left> left_branch: %p | <right> right_branch: %p}}\"];\n",
+    fprintf(file_dot, "node%d  [label = \"{<par> parent: %p | <el> node_element: %s | {<left> left_branch: %p | <right> right_branch: %p}}\"];\n",
                 node -> num_node, node -> parent, node -> node_element, node -> left_branch, node -> right_branch);
 
     if (node -> left_branch != NULL) {

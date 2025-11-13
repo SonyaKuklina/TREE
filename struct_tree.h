@@ -2,13 +2,14 @@
 #define STRUCT_TREES
 
 #include <stddef.h>
-typedef int TreeElement;
+#include <string.h>
+typedef char* TreeElement;
 
 struct Node_t {
 
     TreeElement node_element;
-    struct Node_t* left_branch;
-    struct Node_t* right_branch;
+    struct Node_t* left_branch;//YES
+    struct Node_t* right_branch;//NO
     struct Node_t* parent;
     int num_node;
 
