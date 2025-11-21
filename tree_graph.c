@@ -12,7 +12,7 @@ void GraphicalDumpTree(struct Tree_t* tree, const char* file, const int line) {
 
     CreateDotFile(tree);
 
-    char* file_name_dot = "debug.dot";
+    char* file_name_dot = (char*)"debug.dot";
     char file_name_png[SIZE_NAME_PNG];
     char* png_file = file_name_png;
     if (CreateNamePng(file_name_dot, png_file)) {
@@ -131,6 +131,7 @@ void CreateAndOpenHtmlFile(char* png_file, struct Tree_t* tree,
     fprintf(file_html, "<h3>TREE</h3>\n");
 
     fprintf(file_html, "<p>DumpTree called from: %s %d</p>\n", file, line);
+    fprintf(file_html, "<p> Tree has a %d elements </p>\n", tree -> node_size);
 
     fprintf(file_html, "<img src = \"%s\">\n", png_file);
 

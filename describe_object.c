@@ -3,87 +3,127 @@
 #include <assert.h>
 #include <stdlib.h>
 #include <ctype.h>
+#include <stdbool.h>
 #include "describe_object.h"
 #include "enum_tree.h"
-#include "struct_tree.h"
+#include "structs.h"
 #include "stack_for_road.h"
 
-enum ProgrammReturn CreateDescribe(char* search_list, struct Tree_t* tree) {
+const int MAX_CAPACITY = 100;
+
+enum ProgrammReturn CreateDescribe(char* search_list, struct Akinator* akinator) {
 
     assert(search_list != NULL);
-    assert(tree        != NULL);
+    assert(akinator    != NULL);
 
-    struct Stack_t* stack_road = (struct Stack_t*)calloc(tree -> node_size, sizeof(struct Stack_t));
-    if (stack_road == NULL) return INCORRECT;
-    struct Node_t* search_node = SearchList(tree -> root, search_list);
-    int size_road = CreateRoadToNode(search_node, tree, stack_road);
-    PrintDescribe(stack_road, search_list, size_road);
+    enum SearchList status_node_find = SearchObject(search_list, akinator, akinator -> stack_road_def);
+    if (FoundObjectToDescribe(status_node_find, akinator, search_list) == INCORRECT) return INCORRECT;
+
     return CORRECT;
 
 }
 
-struct Node_t* SearchList(struct Node_t* current_node, char* search_list) {
+
+enum SearchList SearchList(struct Node_t* current_node, char* search_list,struct Stack_t* stack, struct Node_t** result_node) {
 
     assert(search_list != NULL);
+    assert(stack       != NULL);
+    assert(result_node != NULL);
 
-    if (current_node == NULL) return NULL;
+    if (current_node == NULL) return NODE_NOT_FOUND;
 
-    if (strcmp(current_node -> node_element, search_list) == 0) return current_node;
+    if (StackPush(stack, current_node) == INCORRECT) return SEARCH_ERROR;
 
-    struct Node_t* node = SearchList(current_node -> left_branch, search_list);
-    if (node != NULL) return node;
-    node = SearchList(current_node -> right_branch, search_list);
-    return node;
+    if (strcmp(current_node -> node_element, search_list) == 0) {
+        *result_node = current_node;
+        return SEARCH_SUCCESS;
+    }
+
+    enum SearchList left_node_status = SearchList(current_node -> left_branch, search_list, stack, result_node);
+    if (left_node_status == SEARCH_SUCCESS) return SEARCH_SUCCESS;
+    enum SearchList right_node_status = SearchList(current_node -> right_branch, search_list, stack, result_node);
+    if (right_node_status == SEARCH_SUCCESS) return SEARCH_SUCCESS;
+
+    StackPop(stack);
+    return NODE_NOT_FOUND;
 
 }
 
-int CreateRoadToNode(struct Node_t* search_node, struct Tree_t* tree, struct Stack_t* stack_road) {
+void PrintDescribe(struct Akinator* akinator, char* search_list) {
 
-    assert(stack_road != NULL);
+    assert(akinator    != NULL);
+    assert(search_list != NULL);
 
-    struct Node_t* current_node = search_node;
-    int index = 0;
-    while (current_node != tree -> root) {
+    printf("%s -", search_list);
 
-        stack_road[index].curr_node = current_node -> parent;
-        stack_road[index].answer    = (stack_road[index].curr_node -> left_branch == current_node) ? true : false;
-        current_node = current_node -> parent;
-        index++;
-
-    }
-
-    return index;
+    size_t size_stack = (akinator -> stack_road_def) -> size_stack;
+    for (int index = 0; index < size_stack - 2; index++) PrintObjectAttributes(akinator -> stack_road_def, &index);
+    PrintLastObjectAttribute(akinator -> stack_road_def, size_stack - 2);
 
 }
 
-void PrintDescribe(struct Stack_t* stack_road, char* search_list, int size_road) {
+
+void PrintObjectAttributes(struct Stack_t* stack_road, int* index) {
 
     assert(stack_road != NULL);
+    assert(index      != NULL);
+
+    struct Node_t* current_node = stack_road -> curr_node[*index];
+    TreeElement attribute = current_node -> node_element;
+
+    struct Node_t* next_node = stack_road -> curr_node[(*index) + 1];
+
+    bool is_left_branch = (current_node -> left_branch == next_node);
+    if (is_left_branch) printf(" %s,", attribute);
+    else printf(" not %s,", attribute);
+
+}
+
+void PrintLastObjectAttribute(struct Stack_t* stack_road, int index) {
+
+    assert(stack_road != NULL);
+
+    struct Node_t* current_node = stack_road -> curr_node[index];
+    TreeElement attribute = current_node -> node_element;
+
+    struct Node_t* next_node = stack_road -> curr_node[++index];
+
+    bool is_left_branch = (current_node -> left_branch == next_node);
+
+    if (is_left_branch) printf(" %s.\n", attribute);
+    else printf(" not %s.\n", attribute);
+
+}
+
+
+enum SearchList SearchObject(char* object_name, struct Akinator* akinator, struct Stack_t* stack) {
+
+    assert(object_name != NULL);
+    assert(akinator    != NULL);
+    assert(stack       != NULL);
+
+    struct Node_t* result_node = NULL;
+    return SearchList((akinator -> tree) -> root, object_name, stack, &result_node);
+
+}
+
+enum ProgrammReturn FoundObjectToDescribe(enum SearchList status_node_find, struct Akinator* akinator, char* search_list) {
+
     assert(search_list != NULL);
 
-    printf("%s - ", search_list);
+    switch (status_node_find) {
 
-    for (int index = size_road - 1; index >= 0; index--) {
+    case SEARCH_SUCCESS: PrintDescribe(akinator, search_list);
+                         return CORRECT;
 
-        TreeElement attribute = stack_road[index].curr_node -> node_element;
-        char* copy_attribute = strdup(attribute);
-        *copy_attribute = (char)tolower(*copy_attribute);
-        int len_att = strlen(copy_attribute);
-        *(copy_attribute + len_att - 1) = '\0';
+    case NODE_NOT_FOUND: printf("Object '%s' not found. Please try again.\n", search_list);
+                         return CORRECT;
 
-        if (index == 0) {
+    case SEARCH_ERROR:   return INCORRECT;
 
-            if (!stack_road[index].answer) printf("not %s.", copy_attribute);
-            else printf("%s.", copy_attribute);
-
-        } else {
-
-            if (!stack_road[index].answer) printf("not %s, ", copy_attribute);
-            else printf("%s, ", copy_attribute);
-
-        }
+    default:             assert(0);
+                         return INCORRECT;
 
     }
-
 
 }

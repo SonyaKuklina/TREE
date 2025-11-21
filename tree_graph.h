@@ -2,7 +2,7 @@
 #define TREE_GRAPH
 
 #include <stdbool.h>
-#include "struct_tree.h"
+#include "structs.h"
 
 #define SIZE_NAME_PNG 100
 

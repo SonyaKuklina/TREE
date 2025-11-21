@@ -6,197 +6,95 @@
 #include "tree_private.h"
 
 #define MAX_SIZE_STR 100
-#define STRINGIFY(x) #x
-#define SIZE_STR(x) STRINGIFY(x)
+#define STRING(x) #x
+#define SIZE_STR(x) STRING(x)
 
-enum ProgrammReturn InsertInTree(TreeElement element, struct Tree_t* tree) {
 
-    assert(tree != NULL);
-    if (TreeVerify(tree) != SUCCESS) return INCORRECT;
+enum ProgrammReturn PlayAkinator(struct Akinator* akinator) {
 
-    struct Node_t* node = CreateNode(element, tree);
-    assert(node != NULL);
-
-    if (tree -> root != NULL) {
-
-        struct Node_t* current_node = tree -> root;
-        struct Node_t* parent_node  = NULL;
-
-        while (current_node != NULL) {
-
-            parent_node = current_node;
-
-            if      (element < current_node -> node_element)  current_node = current_node -> left_branch;
-            else if (element > current_node -> node_element)  current_node = current_node -> right_branch;
-            else if (element == current_node -> node_element) {
-                free(node);//
-                return CORRECT;
-            }
-
-        }
-
-        if (element <= parent_node -> node_element) parent_node -> left_branch = node;
-        else parent_node -> right_branch = node;
-
-        node -> parent = parent_node;
-
-    } else {
-
-        tree -> root = node;
-
-    }
-
-    (tree -> node_size)++;
-
-    return CORRECT;
-
-}
-
-enum ProgrammReturn DeleteFromTree(TreeElement element, struct Tree_t* tree) {
-
-    assert(tree != NULL);
-    if (TreeVerify(tree) != SUCCESS) return INCORRECT;
-
-    struct Node_t* current_node = tree -> root;
-    struct Node_t* parent_node  = NULL;
-    TreeElement current_element = current_node -> node_element;
-
-    while (element != current_element) {
-
-        parent_node = current_node;
-
-        if (element < current_element) current_node = current_node -> left_branch;
-        else current_node = current_node -> right_branch;
-
-        if (current_node == NULL) return CORRECT; //элемент, который я хочу удалить не был найден
-
-        current_element = current_node -> node_element;
-
-    }
-
-    if (current_node == NULL) return CORRECT;
-
-    if (parent_node == NULL) {
-
-        DestroyTree(tree, current_node);
-
-    } else if (parent_node->left_branch == current_node) {
-
-        DestroyTree(tree, current_node);
-        parent_node->left_branch = NULL;
-
-    } else {
-
-        DestroyTree(tree, current_node);
-        parent_node->right_branch = NULL;
-
-    }
-
-    return CORRECT;
-
-}
-
-void Akinator(struct Tree_t* tree) {
-
-    assert(tree != NULL);
-
-    PlayAkinator(tree);
-
-    printf("Thank you for game!\n");
-
-}
-
-void PlayAkinator(struct Tree_t* tree) {
-
-    assert(tree != NULL);
+    assert(akinator != NULL);
+    enum ProgrammReturn completion_status = AkinatorVerify(akinator);
+    if (completion_status == INCORRECT) return INCORRECT;
 
     bool repeat_play = true;
-    char answer[MAX_SIZE_STR];
 
     while (repeat_play) {
 
-        QuestionAnswer(tree -> root, tree);
+        AskQuestion(akinator);
         printf("Play again?: ");
-        scanf("%" SIZE_STR(MAX_SIZE_STR) "[^\n]", answer);
-        getchar();
+        char* answer = GetUserResponse();
         repeat_play = ((strcmp("Yes", answer) == 0) || (strcmp("yes", answer) == 0));
+        free(answer);
+
+    }
+
+    return completion_status;
+
+}
+
+void AskQuestion(struct Akinator* akinator) {
+
+    assert(akinator != NULL);
+
+    struct Node_t* current_node = (akinator -> tree) -> root;
+
+    while (current_node != NULL) {
+
+        if ((current_node -> left_branch == NULL) && (current_node -> right_branch == NULL)) {
+            CheckAnswer(current_node, akinator);
+            return;
+        }
+
+        printf("%s?: ", current_node -> node_element);
+        char* answer = GetUserResponse();
+
+        if ((strcmp("Yes", answer) == 0) || (strcmp("yes", answer) == 0)) current_node = current_node -> left_branch;
+        else current_node = current_node -> right_branch;
+
+        free(answer);
 
     }
 
 }
 
-void QuestionAnswer(struct Node_t* current_node, struct Tree_t* tree) {
 
-    assert(tree != NULL);
+void CheckAnswer(struct Node_t* current_node, struct Akinator* akinator) {
 
-    if ((current_node -> left_branch == NULL) && (current_node -> right_branch == NULL)) {
-        GetAnswerToRepeatGame(current_node, tree);
-        return;
-    }
-
-    printf("%s: ", current_node -> node_element);
-    char answer[MAX_SIZE_STR];
-    scanf("%" SIZE_STR(MAX_SIZE_STR) "[^\n]", answer);
-    getchar();
-
-    if ((strcmp("Yes", answer) == 0) || (strcmp("yes", answer) == 0)) {
-        QuestionAnswer(current_node -> left_branch, tree);
-    }
-    else {
-        QuestionAnswer(current_node -> right_branch, tree);
-    }
-
-}
-
-
-void GetAnswerToRepeatGame(struct Node_t* current_node, struct Tree_t* tree) {
-
-    assert(tree != NULL);
-
-    char* answer        = (char*)calloc(MAX_SIZE_STR, sizeof(char));
-    char* search_object = (char*)calloc(MAX_SIZE_STR, sizeof(char));
-    char* difference    = (char*)calloc(MAX_SIZE_STR, sizeof(char));
+    assert(akinator != NULL);
 
     printf("Is it %s? ", current_node -> node_element);
-    scanf("%" SIZE_STR(MAX_SIZE_STR) "[^\n]", answer);
-    getchar();
+    char* answer = GetUserResponse();
 
     if ((strcmp("yes", answer) == 0) || (strcmp("Yes", answer) == 0)) {
 
         printf("I guessed it! ");
+        free(answer);
         return;
 
     } else {
 
         printf("What did you guess? : ");
-        scanf("%" SIZE_STR(MAX_SIZE_STR) "[^\n]", search_object);
-        getchar();
+        char* search_object = GetUserResponse();
         printf("What is the difference between %s and the %s? : ", search_object, current_node -> node_element);
-        scanf("%" SIZE_STR(MAX_SIZE_STR) "[^\n]", difference);
-        getchar();
+        char* difference = GetUserResponse();
         AnalysisAttribute(difference);
-        AddNodes(current_node, tree, search_object, difference);
+        AddNodes(current_node, akinator, search_object, difference);
         return;
 
     }
 
-
 }
 
-void AddNodes(struct Node_t* current_node, struct Tree_t* tree,
+void AddNodes(struct Node_t* current_node, struct Akinator* akinator,
               char* search_object, char* difference) {
 
-    assert(tree          != NULL);
+    assert(akinator      != NULL);
     assert(search_object != NULL);
     assert(difference    != NULL);
 
     TreeElement old_answer    = current_node -> node_element;
-    struct Node_t* left_node  = CreateNode(search_object, tree);
-    (tree -> node_size)++;
-    struct Node_t* right_node = CreateNode(old_answer, tree);
-    (tree -> node_size)++;
-
-    ChangeStrDifference(difference);
+    struct Node_t* left_node  = CreateNode(search_object, akinator -> tree);
+    struct Node_t* right_node = CreateNode(old_answer, akinator -> tree);
 
     current_node -> node_element = difference;
     current_node -> left_branch  = left_node;
@@ -204,6 +102,7 @@ void AddNodes(struct Node_t* current_node, struct Tree_t* tree,
 
     left_node  -> parent = current_node;
     right_node -> parent = current_node;
+
 
 }
 
@@ -222,8 +121,7 @@ void AnalysisAttribute(char* difference) {
         (strstr(difference, " no ")  != NULL)) {
 
         printf("The sign is too complex, please repeat: ");
-        scanf("%" SIZE_STR(MAX_SIZE_STR) "[^\n]", difference);
-        getchar();
+        difference = GetUserResponse();
 
     } else {
 
@@ -235,16 +133,16 @@ void AnalysisAttribute(char* difference) {
 
 }
 
-void ChangeStrDifference(char* difference) {
+char* GetUserResponse() {
 
-    assert(difference != NULL);
-
-    int len_str = strlen(difference);
-    *(difference + len_str) = '?';
-    *(difference + len_str + 1) = '\0';
-
-    if (!isupper(*difference)) *difference = *difference - 32;
+    char* answer = (char*)calloc(MAX_SIZE_STR, sizeof(char));
+    assert(answer != NULL);
+    scanf("%" SIZE_STR(MAX_SIZE_STR) "[^\n]", answer);
+    getchar();
+    return answer;
 
 }
+
+
 
 
